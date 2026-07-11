@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Senior Community App Prototype</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/dist/tabler-icons.min.css">
+<style>
+  :root {
+    --surface-1: #f5f5f7;
+    --surface-2: #ffffff;
+    --border: #e3e3e6;
+    --text-primary: #1a1a1a;
+    --text-secondary: #6b7280;
+    --text-muted: #9ca3af;
+    --bg-accent: #eaf2fe;
+    --text-accent: #2563eb;
+    --bg-danger: #fee2e2;
+    --text-danger: #dc2626;
+    --bg-success: #dcfce7;
+    --text-success: #16a34a;
+    --bg-warning: #fef3c7;
+    --text-warning: #b45309;
+    --bg-info: #e0f2fe;
+    --text-info: #0369a1;
+    --radius: 12px;
+    --radius-lg: 18px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #ececef;
+    color: var(--text-primary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 12px 60px;
+  }
+
+  p { margin: 0; }
+
+  button {
+    font-family: inherit;
+    cursor: pointer;
+    background: var(--surface-2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-primary);
+  }
+  button:active { opacity: 0.7; }
+
+  .tabbar {
+    display: flex;
+    gap: 8px;
+    background: var(--surface-1);
+    padding: 5px;
+    border-radius: 22px;
+    margin-bottom: 16px;
+  }
+  .tabbar button {
+    padding: 10px 18px;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 15px;
+  }
+  .tabbar button.active {
+    background: var(--bg-accent);
+    color: var(--text-accent);
+    font-weight: 600;
+  }
+  .tabbar button:not(.active) {
+    background: transparent;
+    color: var(--text-secondary);
+  }
+
+  .phone {
+    width: 360px;
+    max-width: 94vw;
+    background: var(--surface-2);
+    border-radius: 26px;
+    border: 0.5px solid var(--border);
+    padding: 22px 16px;
+    min-height: 600px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+  }
+
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  .back-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .back-row button {
+    padding: 6px;
+    background: transparent;
+    border: none;
+  }
+  .back-row p { font-size: 20px; font-weight: 600; }
+
+  .card {
+    background: var(--surface-1);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+
+  .tile-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .tile {
+    background: var(--surface-1);
+    border: none;
+    border-radius: var(--radius-lg);
+    padding: 16px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 8px;
+  }
+  .tile .icon-circle {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .tile p.title { font-size: 15px; font-weight: 600; }
+  .tile p.subtitle { font-size: 12.5px; color: var(--text-secondary); line-height: 1.3; }
+
+  .action-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 18px 8px;
+    background: var(--surface-1);
+    border: none;
+    border-radius: var(--radius-lg);
+  }
+  .action-tile span { font-size: 14px; font-weight: 500; }
+  .action-tile i { font-size: 26px; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .req-btn {
+    width: 100%;
+    padding: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: var(--radius);
+  }
+
+  .hint {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 16px;
+    text-align: center;
+    max-width: 340px;
+  }
+
+  /* calendar */
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    margin-bottom: 18px;
+  }
+  .cal-dow {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: center;
+    font-weight: 600;
+  }
+  .cal-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    border-radius: 50%;
+    position: relative;
+  }
+  .cal-day.event {
+    background: var(--bg-accent);
+    color: var(--text-accent);
+    font-weight: 700;
+  }
+  .cal-day.empty { visibility: hidden; }
+</style>
+</head>
+<body>
+
+<div class="tabbar">
+  <button id="tab-resident" class="active" onclick="setRole('resident')">Resident view</button>
+  <button id="tab-family" onclick="setRole('family')">Family/staff view</button>
+</div>
+
+<div class="phone">
+
+  <!-- HOME SCREEN -->
+  <div id="screen-home" class="screen active">
+    <div style="text-align:center; margin-bottom:16px;">
+      <p style="font-size:15px; color:var(--text-secondary);">Good morning</p>
+      <p style="font-size:23px; font-weight:700; margin-top:2px;">Mr. Kim</p>
+    </div>
+
+    <button style="width:100%; background:var(--bg-danger); border:none; padding:18px; display:flex; flex-direction:column; align-items:center; gap:6px; margin-bottom:12px; border-radius:var(--radius-lg);">
+      <i class="ti ti-alert-circle" style="font-size:28px; color:var(--text-danger);"></i>
+      <span style="font-size:16px; font-weight:700; color:var(--text-danger);">I need help</span>
+    </button>
+
+    <div style="background:var(--bg-accent); border-radius:var(--radius); padding:14px; display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+      <i class="ti ti-robot" style="font-size:24px; color:var(--text-accent);"></i>
+      <div>
+        <p style="font-size:15px; font-weight:600; color:var(--text-accent);">Medication robot</p>
+        <p style="font-size:13px; color:var(--text-accent); margin-top:1px;">Arriving in about 5 min</p>
+      </div>
+    </div>
+    <div style="background:var(--surface-1); border-radius:var(--radius); padding:12px 14px; display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+      <i class="ti ti-shirt" style="font-size:20px; color:var(--text-success);"></i>
+      <p style="font-size:13.5px;">Laundry picked up · 9:00am</p>
+    </div>
+    <div style="background:var(--surface-1); border-radius:var(--radius); padding:12px 14px; display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+      <i class="ti ti-package" style="font-size:20px; color:var(--text-secondary);"></i>
+      <p style="font-size:13.5px;">Package delivered to your door · 10:15am</p>
+    </div>
+
+    <div style="background:var(--surface-1); border-radius:var(--radius); padding:14px; display:flex; align-items:center; gap:12px; margin-bottom:14px;">
+      <i class="ti ti-heart" style="font-size:20px; color:var(--text-secondary); flex-shrink:0;"></i>
+      <p style="font-size:14px; flex:1;">It's been a few days — want to call family?</p>
+      <button style="padding:8px 14px; font-size:13px; font-weight:500; flex-shrink:0;">Call</button>
+    </div>
+
+    <div class="grid-2" style="grid-template-columns: 1fr 1fr;">
+      <button class="action-tile" onclick="showScreen('plan')">
+        <i class="ti ti-list-check"></i>
+        <span>Today's plan</span>
+      </button>
+      <button class="action-tile" onclick="showScreen('events')">
+        <i class="ti ti-calendar-event"></i>
+        <span>Events</span>
+      </button>
+      <button class="action-tile" onclick="showScreen('resources')">
+        <i class="ti ti-folder"></i>
+        <span>Resources</span>
+      </button>
+      <button class="action-tile" onclick="showScreen('services')">
+        <i class="ti ti-robot"></i>
+        <span>Robot services</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- TODAY'S PLAN -->
+  <div id="screen-plan" class="screen">
+    <div class="back-row">
+      <button onclick="showScreen('home')"><i class="ti ti-arrow-left" style="font-size:20px; color:var(--text-secondary);"></i></button>
+      <p>Today's plan</p>
+    </div>
+    <div style="display:flex; gap:14px; margin-bottom:16px;">
+      <p style="font-size:13px; color:var(--text-muted); width:50px; padding-top:4px;">8:00</p>
+      <div class="card" style="flex:1; margin:0;"><p style="font-size:15px; font-weight:600;">Medication delivered</p></div>
+    </div>
+    <div style="display:flex; gap:14px; margin-bottom:16px;">
+      <p style="font-size:13px; color:var(--text-muted); width:50px; padding-top:4px;">9:00</p>
+      <div class="card" style="flex:1; margin:0;"><p style="font-size:15px; font-weight:600;">Laundry pickup</p></div>
+    </div>
+    <div style="display:flex; gap:14px; margin-bottom:16px;">
+      <p style="font-size:13px; color:var(--text-muted); width:50px; padding-top:4px;">11:00</p>
+      <div class="card" style="flex:1; margin:0;"><p style="font-size:15px; font-weight:600;">Telemedicine call — Dr. Yoon</p></div>
+    </div>
+    <div style="display:flex; gap:14px; margin-bottom:16px;">
+      <p style="font-size:13px; color:var(--text-muted); width:50px; padding-top:4px;">1:00</p>
+      <div class="card" style="flex:1; margin:0;"><p style="font-size:15px; font-weight:600;">Lunch in common dining hall</p></div>
+    </div>
+    <div style="display:flex; gap:14px; margin-bottom:16px;">
+      <p style="font-size:13px; color:var(--text-muted); width:50px; padding-top:4px;">3:00</p>
+      <div class="card" style="flex:1; margin:0;"><p style="font-size:15px; font-weight:600;">Cleaning robot visit</p></div>
+    </div>
+    <div style="display:flex; gap:14px;">
+      <p style="font-size:13px; color:var(--text-muted); width:50px; padding-top:4px;">6:00</p>
+      <div style="flex:1; background:var(--bg-accent); border-radius:var(--radius); padding:14px;">
+        <p style="font-size:15px; font-weight:600; color:var(--text-accent);">Reminder: call family</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- EVENTS -->
+  <div id="screen-events" class="screen">
+    <div class="back-row">
+      <button onclick="showScreen('home')"><i class="ti ti-arrow-left" style="font-size:20px; color:var(--text-secondary);"></i></button>
+      <p>Community events</p>
+    </div>
+
+    <p style="font-size:15px; font-weight:600; margin-bottom:10px;">July</p>
+    <div class="cal-grid">
+      <div class="cal-dow">S</div><div class="cal-dow">M</div><div class="cal-dow">T</div><div class="cal-dow">W</div><div class="cal-dow">T</div><div class="cal-dow">F</div><div class="cal-dow">S</div>
+      <div class="cal-day empty"></div><div class="cal-day empty"></div><div class="cal-day empty"></div>
+      <div class="cal-day">1</div><div class="cal-day">2</div><div class="cal-day">3</div><div class="cal-day">4</div>
+      <div class="cal-day">5</div><div class="cal-day">6</div><div class="cal-day">7</div><div class="cal-day">8</div><div class="cal-day">9</div><div class="cal-day">10</div><div class="cal-day">11</div>
+      <div class="cal-day event">12</div><div class="cal-day">13</div><div class="cal-day">14</div><div class="cal-day event">15</div><div class="cal-day">16</div><div class="cal-day">17</div><div class="cal-day event">18</div>
+      <div class="cal-day">19</div><div class="cal-day">20</div><div class="cal-day">21</div><div class="cal-day event">22</div><div class="cal-day">23</div><div class="cal-day">24</div><div class="cal-day">25</div>
+      <div class="cal-day">26</div><div class="cal-day">27</div><div class="cal-day">28</div><div class="cal-day">29</div><div class="cal-day">30</div><div class="cal-day">31</div><div class="cal-day empty"></div>
+    </div>
+
+    <p style="font-size:15px; font-weight:600; margin-bottom:10px;">Upcoming</p>
+    <div class="card">
+      <p style="font-size:15px; font-weight:600;">Morning Walking Group</p>
+      <p style="font-size:13px; color:var(--text-secondary); margin-top:4px;">Sat, July 12 · 7:30am · Garden entrance</p>
+    </div>
+    <div class="card">
+      <p style="font-size:15px; font-weight:600;">Gardening Club</p>
+      <p style="font-size:13px; color:var(--text-secondary); margin-top:4px;">Tue, July 15 · 10:00am · Rooftop garden</p>
+    </div>
+    <div class="card">
+      <p style="font-size:15px; font-weight:600;">Community Game Night</p>
+      <p style="font-size:13px; color:var(--text-secondary); margin-top:4px;">Fri, July 18 · 6:00pm · Common hall</p>
+    </div>
+    <div class="card" style="margin-bottom:0;">
+      <p style="font-size:15px; font-weight:600;">Tea & Conversation Circle</p>
+      <p style="font-size:13px; color:var(--text-secondary); margin-top:4px;">Tue, July 22 · 3:00pm · Lounge</p>
+    </div>
+  </div>
+
+  <!-- ROBOT SERVICES -->
+  <div id="screen-services" class="screen">
+    <div class="back-row">
+      <button onclick="showScreen('home')"><i class="ti ti-arrow-left" style="font-size:20px; color:var(--text-secondary);"></i></button>
+      <p>Robot services</p>
+    </div>
+
+    <div class="tile-grid">
+      <div class="tile">
+        <div class="icon-circle" style="background:var(--surface-2);"><i class="ti ti-shirt" style="font-size:24px; color:var(--text-secondary);"></i></div>
+        <p class="title">Laundry / trash</p>
+        <p class="subtitle" id="status-laundry">Next pickup 9:00am</p>
+        <button id="btn-laundry" class="req-btn" onclick="requestService('laundry')">Request now</button>
+      </div>
+      <div class="tile">
+        <div class="icon-circle" style="background:var(--surface-2);"><i class="ti ti-package" style="font-size:24px; color:var(--text-secondary);"></i></div>
+        <p class="title">Grocery / mail</p>
+        <p class="subtitle" id="status-package">Nothing waiting right now</p>
+        <button id="btn-package" class="req-btn" onclick="requestService('package')">Request now</button>
+      </div>
+      <div class="tile">
+        <div class="icon-circle" style="background:var(--surface-2);"><i class="ti ti-walk" style="font-size:24px; color:var(--text-secondary);"></i></div>
+        <p class="title">Mobility escort</p>
+        <p class="subtitle" id="status-escort">Walk to common areas</p>
+        <button id="btn-escort" class="req-btn" onclick="requestService('escort')">Request now</button>
+      </div>
+      <div class="tile">
+        <div class="icon-circle" style="background:var(--surface-2);"><i class="ti ti-spray" style="font-size:24px; color:var(--text-secondary);"></i></div>
+        <p class="title">Cleaning</p>
+        <p class="subtitle" id="status-cleaning">Scheduled 3:00pm today</p>
+        <button id="btn-cleaning" class="req-btn" onclick="requestService('cleaning')">Request now</button>
+      </div>
+      <div class="tile">
+        <div class="icon-circle" style="background:var(--surface-2);"><i class="ti ti-tools-kitchen-2" style="font-size:24px; color:var(--text-secondary);"></i></div>
+        <p class="title">Meal request</p>
+        <p class="subtitle" id="status-meal">Next meal service 12:00pm</p>
+        <button id="btn-meal" class="req-btn" onclick="requestService('meal')">Request now</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESOURCES -->
+  <div id="screen-resources" class="screen">
+    <div class="back-row">
+      <button onclick="showScreen('home')"><i class="ti ti-arrow-left" style="font-size:20px; color:var(--text-secondary);"></i></button>
+      <p>Resources</p>
+    </div>
+
+    <div class="tile-grid">
+      <button class="tile" onclick="showScreen('doctor')">
+        <div class="icon-circle" style="background:var(--bg-danger);"><i class="ti ti-stethoscope" style="font-size:24px; color:var(--text-danger);"></i></div>
+        <p class="title">Find a doctor</p>
+        <p class="subtitle">Nearby clinics</p>
+      </button>
+      <button class="tile" onclick="showScreen('telemedicine')">
+        <div class="icon-circle" style="background:var(--bg-info);"><i class="ti ti-video" style="font-size:24px; color:var(--text-info);"></i></div>
+        <p class="title">Telemedicine</p>
+        <p class="subtitle">Video visit now</p>
+      </button>
+      <button class="tile" onclick="showScreen('benefits')">
+        <div class="icon-circle" style="background:var(--bg-accent);"><i class="ti ti-coin" style="font-size:24px; color:var(--text-accent);"></i></div>
+        <p class="title">Benefits</p>
+        <p class="subtitle">Pension & subsidies</p>
+      </button>
+      <button class="tile" onclick="showScreen('job')">
+        <div class="icon-circle" style="background:var(--bg-success);"><i class="ti ti-briefcase" style="font-size:24px; color:var(--text-success);"></i></div>
+        <p class="title">Find work</p>
+        <p class="subtitle">Flexible jobs</p>
+      </button>
+    </div>
+  </div>
+
+  <!-- DOCTOR -->
+  <div id="screen-doctor" class="screen">
+    <div class="back-row">
+      <button onclick="showScreen('resources')"><i class="ti ti-arrow-left" style="font-size:20px; color:var(--text-secondary);"></i></button>
+      <p>Find a doctor</p>
+    </div>
+    <div class="card"><p style="font-size:15px; font-weight:600;">Seongnam Family Clinic</p><p style="font-size:13px; color:var(--text-secondary); margin-top:4px;">General practice · 0.4 km · Open now</p></div>
+    <div class="card"><p style="font-size:15px; font-weight:600;">Bundang Cardiology Center</p><p style="font-size:13px; color:var(--text-secondary); margin-top:4px;">Cardiology · 1.2 km · In-person only</p></div>
+    <div class="card" style="margin-bottom:0;"><p style="font-size:15px; font-weight:600;">Community Health ER</p><p style="font-size:13px; color:var(--text-secondary); margin-top:4px;">Emergency · 2.1 km · Capacity: normal</p></div>
+  </div>
+
+  <!-- TELEMEDICINE -->
+  <div id="screen-telemedicine" class="screen">
+    <div class="back-row">
+      <button onclick="showScreen('resources')"><i class="ti ti-arrow-left" style="font-size:20px; color:var(--text-secondary);"></i></button>
+      <p>Telemedicine</p>
+    </div>
+    <div style="background:var(--bg-info); border-radius:var(--radius); padding:14px; margin-bottom:14px;">
+      <p style="font-size:14px; color:var(--text-info);">Useful when a specialist isn't nearby</p>
+    </div>
+    <div class="card" style="display:flex; align-items:center; justify-content:space-between;">
+      <div>
+        <p style="font-size:15px; font-weight:600;">Dr. Yoon — General practice</p>
+        <p style="font-size:13px; color:var(--text-secondary); margin-top:4px;">Available now</p>
+      </div>
+      <i class="ti ti-video" style="font-size:22px; color:var(--text-info);"></i>
+    </div>
+    <div class="card" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0;">
+      <div>
+        <p style="font-size:15px; font-weight:600;">Dr. Cho — Cardiology</p>
+        <p style="font-size:13px; color:var(--text-secondary); margin-top:4px;">Next slot: 2:30pm</p>
+      </div>
+      <i class="ti ti-calendar" style="font-size:22px; color:var(--text-secondary);"></i>
+    </div>
+  </div>
+
+  <!-- BENEFITS -->
+  <div id="screen-benefits" class="screen">
+    <div class="back-row">
+      <button onclick="showScreen('resources')"><i class="ti ti-arrow-left" style="font-size:20px; color:var(--text-secondary);"></i></button>
+      <p>Benefits</p>
+    </div>
+    <div style="background:var(--bg-success); border-radius:var(--radius); padding:14px; margin-bottom:14px;">
+      <p style="font-size:15px; font-weight:600; color:var(--text-success);">You qualify for:</p>
+    </div>
+    <div class="card"><p style="font-size:15px; font-weight:600;">Basic Old-Age Pension</p><p style="font-size:13px; color:var(--text-secondary); margin-top:4px;">Est. 334,000 KRW / month</p></div>
+    <div class="card"><p style="font-size:15px; font-weight:600;">Senior Housing Subsidy</p><p style="font-size:13px; color:var(--text-secondary); margin-top:4px;">Application needed · tap for steps</p></div>
+    <div class="card" style="margin-bottom:0;"><p style="font-size:15px; font-weight:600;">Healthcare Cost Subsidy</p><p style="font-size:13px; color:var(--text-secondary); margin-top:4px;">Reduces co-pay at partner clinics</p></div>
+  </div>
+
+  <!-- JOB -->
+  <div id="screen-job" class="screen">
+    <div class="back-row">
+      <button onclick="showScreen('resources')"><i class="ti ti-arrow-left" style="font-size:20px; color:var(--text-secondary);"></i></button>
+      <p>Find work</p>
+    </div>
+    <div class="card"><p style="font-size:15px; font-weight:600;">Community Garden Assistant</p><p style="font-size:13px; color:var(--text-secondary); margin-top:4px;">Part-time · 3 days/week · Nearby</p></div>
+    <div class="card" style="margin-bottom:0;"><p style="font-size:15px; font-weight:600;">Local Library Greeter</p><p style="font-size:13px; color:var(--text-secondary); margin-top:4px;">Part-time · Flexible hours</p></div>
+  </div>
+
+  <!-- FAMILY DASHBOARD -->
+  <div id="screen-family" class="screen">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:18px;">
+      <div style="width:48px; height:48px; border-radius:50%; background:var(--bg-accent); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:15px; color:var(--text-accent);">MK</div>
+      <div>
+        <p style="font-weight:700; font-size:16px;">Mr. Kim</p>
+        <p style="font-size:13px; color:var(--text-secondary);">Unit 214 · Checked in 8:12am</p>
+      </div>
+      <span style="margin-left:auto; background:var(--bg-success); color:var(--text-success); font-size:12px; padding:5px 12px; border-radius:var(--radius); font-weight:600;">All good</span>
+    </div>
+
+    <div class="tile-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom:16px;">
+      <div class="card" style="margin:0; text-align:center;"><p style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Med. taken</p><p style="font-size:16px; font-weight:700;">8:05am</p></div>
+      <div class="card" style="margin:0; text-align:center;"><p style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Check-ins</p><p style="font-size:16px; font-weight:700;">3/wk</p></div>
+      <div class="card" style="margin:0; text-align:center; cursor:pointer;" onclick="toggleWhy()"><p style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Isolation</p><p style="font-size:16px; font-weight:700; color:var(--text-warning);">Moderate</p></div>
+    </div>
+
+    <div id="why-box" style="display:none; background:var(--bg-warning); border-radius:var(--radius); padding:14px; margin-bottom:18px;">
+      <p style="font-size:13px; color:var(--text-warning);">Why it matters: seniors living alone report notably higher rates of depression than those with regular family contact.</p>
+    </div>
+
+    <div style="border-top:0.5px solid var(--border); padding-top:14px;">
+      <p style="font-size:14px; color:var(--text-secondary); margin-bottom:12px; font-weight:600;">Recent activity</p>
+      <div style="display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:0.5px solid var(--border);">
+        <i class="ti ti-robot" style="font-size:20px; color:var(--text-secondary);"></i>
+        <span style="font-size:14px; flex:1;">Medication robot completed delivery</span>
+        <span style="font-size:12px; color:var(--text-muted);">8:05am</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:0.5px solid var(--border);">
+        <i class="ti ti-shirt" style="font-size:20px; color:var(--text-secondary);"></i>
+        <span style="font-size:14px; flex:1;">Laundry picked up</span>
+        <span style="font-size:12px; color:var(--text-muted);">9:00am</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:0.5px solid var(--border);">
+        <i class="ti ti-mood-neutral" style="font-size:20px; color:var(--text-warning);"></i>
+        <span style="font-size:14px; flex:1;">No family calls logged in 6 days</span>
+        <span style="font-size:12px; color:var(--text-muted);">flagged</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; padding:10px 0;">
+        <i class="ti ti-briefcase" style="font-size:20px; color:var(--text-secondary);"></i>
+        <span style="font-size:14px; flex:1;">Viewed part-time job listings</span>
+        <span style="font-size:12px; color:var(--text-muted);">yesterday</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<p class="hint">Try Today's plan, Events, Robot services (tap "Request now" — tap again to cancel), or Resources from the home screen.</p>
+
+<script>
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+}
+function toggleWhy() {
+  const box = document.getElementById('why-box');
+  box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
+
+const serviceDefaults = {
+  laundry: 'Next pickup 9:00am',
+  package: 'Nothing waiting right now',
+  escort: 'Walk to common areas',
+  cleaning: 'Scheduled 3:00pm today',
+  meal: 'Next meal service 12:00pm'
+};
+const serviceRequested = {};
+
+function requestService(key) {
+  const statusEl = document.getElementById('status-' + key);
+  const btnEl = document.getElementById('btn-' + key);
+  if (!serviceRequested[key]) {
+    statusEl.textContent = 'Robot notified — on its way';
+    statusEl.style.color = 'var(--text-accent)';
+    btnEl.textContent = 'Cancel request';
+    serviceRequested[key] = true;
+  } else {
+    statusEl.textContent = serviceDefaults[key];
+    statusEl.style.color = 'var(--text-secondary)';
+    btnEl.textContent = 'Request now';
+    serviceRequested[key] = false;
+  }
+}
+
+function setRole(role) {
+  const resTab = document.getElementById('tab-resident');
+  const famTab = document.getElementById('tab-family');
+  if (role === 'resident') {
+    resTab.classList.add('active');
+    famTab.classList.remove('active');
+    showScreen('home');
+  } else {
+    famTab.classList.add('active');
+    resTab.classList.remove('active');
+    showScreen('family');
+  }
+}
+</script>
+
+</body>
+</html>
